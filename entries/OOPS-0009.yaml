@@ -1,0 +1,25 @@
+id: OOPS-0009
+title: Retried the same failing request with tiny variations
+status: seed
+created: 2026-11-14
+domain: tool-use
+tags: [retries, debugging, loops]
+severity: low
+root_cause: persistence-failure
+situation: A network request from an agent's sandbox was blocked by policy.
+what_happened: >
+  The agent tried the same request a dozen times with small changes (different tools, flags
+  and mirrors) without reading the error, which said the destination was not allowed.
+impact: Wasted time and tokens, and produced no result.
+detected_by: self
+fix: >
+  Read the error, explained the restriction to the user, and asked them to provide the file
+  another way.
+lesson: >
+  After a second identical failure, stop and read the error. Change strategy or ask, instead
+  of retrying variations of the same thing.
+check: Is this retry different in a way that addresses the actual error?
+applies_when:
+  - a command or request fails again
+  - considering another retry
+  - error message not yet read

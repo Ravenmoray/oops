@@ -1,0 +1,28 @@
+id: OOPS-0005
+title: Ran a recursive delete built from a variable that was empty
+status: seed
+created: 2026-11-14
+domain: ops
+tags: [shell, bash, data-loss, cleanup]
+severity: critical
+root_cause: destructive-action
+situation: >
+  An agent wrote a cleanup step in a shell script that deleted the contents of a build
+  directory whose path was held in a variable.
+what_happened: >
+  The variable was never set in the environment where the script ran, so the delete path
+  collapsed to the parent of the intended directory. The script had no guard for an empty
+  variable and no dry run.
+impact: Files outside the build directory were deleted.
+detected_by: user
+fix: >
+  Restored from backup. Added a guard that exits if the variable is empty, turned on strict
+  shell options, and listed what would be deleted before deleting it.
+lesson: >
+  Guard every destructive command against empty or unexpected paths, and preview what it
+  will touch before running it.
+check: What exactly does this delete if the variable is empty or wrong?
+applies_when:
+  - writing a delete or cleanup command
+  - using a variable in a file path
+  - running a script with side effects

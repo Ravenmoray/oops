@@ -1,0 +1,24 @@
+id: OOPS-0003
+title: Answered who currently holds a role from training data
+status: seed
+created: 2026-11-14
+domain: research
+tags: [current-events, recency, search]
+severity: medium
+root_cause: stale-knowledge
+situation: >
+  A user asked who currently runs a well-known company. The agent had web search available.
+what_happened: >
+  The agent answered from memory, with confidence. The role had changed hands after the
+  model's training data was collected.
+detected_by: user
+fix: Searched, found the current holder, and gave the corrected answer with a source.
+lesson: >
+  Look up anything that describes the present state of the world, such as office holders,
+  prices, versions and laws, even when the answer feels certain.
+check: Could this answer have changed since my training data was collected?
+applies_when:
+  - question about who currently holds a role
+  - asked for the latest version of software
+  - asked for a current price or rule
+related: [OOPS-0013]

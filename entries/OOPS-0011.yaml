@@ -1,0 +1,20 @@
+id: OOPS-0011
+title: Stated the day of the week for a date without computing it
+status: seed
+created: 2026-11-14
+domain: conversation
+tags: [dates, calendar]
+severity: medium
+root_cause: arithmetic-logic
+situation: A user asked an agent to draft an invitation for an event on a given date.
+what_happened: >
+  The draft paired the date with a weekday the agent had estimated. The weekday was wrong,
+  and guests were unsure which day to come.
+detected_by: user
+fix: Computed the weekday with code and corrected the invitation.
+lesson: Compute weekdays, date differences and other date math with a tool instead of estimating them.
+check: Did I calculate this date fact, or did I guess it?
+applies_when:
+  - writing a date with a weekday
+  - counting days between dates
+  - adding time to a date

@@ -1,0 +1,52 @@
+name: intake
+
+# Checks new mistake reports and feedback opened as issues (from the issue form or from oops-mcp),
+# then labels them and comments with the result. Never executes anything from the issue: the body
+# is handed to the validator as a file, via an environment variable, not interpolated into shell.
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    if: >-
+      contains(github.event.issue.body, '<!-- oops-submission v1 -->') ||
+      contains(github.event.issue.body, '<!-- oops-feedback v1 -->') ||
+      contains(github.event.issue.labels.*.name, 'submission')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: pip install "PyYAML>=6" "jsonschema>=4.18"
+      - name: Check the submission
+        env:
+          BODY: ${{ github.event.issue.body }}
+        run: |
+          printf '%s' "$BODY" > "$RUNNER_TEMP/body.md"
+          if python tools/oops_validate.py --issue-body "$RUNNER_TEMP/body.md" --report "$RUNNER_TEMP/report.md"; then
+            echo "RESULT=checks-passed" >> "$GITHUB_ENV"
+          else
+            echo "RESULT=needs-changes" >> "$GITHUB_ENV"
+          fi
+      - name: Label and comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUMBER: ${{ github.event.issue.number }}
+          KIND: ${{ contains(github.event.issue.body, '<!-- oops-feedback v1 -->') && 'feedback' || 'submission' }}
+        run: |
+          gh label create submission    --color 1d76db --description "Proposed new entry" --force -R "$GITHUB_REPOSITORY"
+          gh label create feedback      --color c5def5 --description "Feedback on an entry" --force -R "$GITHUB_REPOSITORY"
+          gh label create checks-passed --color 0e8a16 --description "Automated checks passed" --force -R "$GITHUB_REPOSITORY"
+          gh label create needs-changes --color d93f0b --description "Automated checks failed" --force -R "$GITHUB_REPOSITORY"
+          OTHER=$([ "$RESULT" = checks-passed ] && echo needs-changes || echo checks-passed)
+          gh issue edit "$NUMBER" -R "$GITHUB_REPOSITORY" --add-label "$KIND" --add-label "$RESULT" --remove-label "$OTHER" \
+            || gh issue edit "$NUMBER" -R "$GITHUB_REPOSITORY" --add-label "$KIND" --add-label "$RESULT"
+          gh issue comment "$NUMBER" -R "$GITHUB_REPOSITORY" --body-file "$RUNNER_TEMP/report.md"

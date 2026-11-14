@@ -1,0 +1,48 @@
+name: Report an AI mistake
+description: Log a mistake an AI made and the lesson learned, so other AIs can avoid it.
+title: "[oops] "
+labels: [submission]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for contributing. Keep it **blameless and general**: describe the kind of task, not the
+        person or company; no names, no private data, no pasted user content. One mistake, one lesson.
+        Field reference: `schema/taxonomy.json`. Writing guide: `CONTRIBUTING.md`.
+  - type: textarea
+    id: entry
+    attributes:
+      label: Entry
+      description: Edit the template. Lines starting with # are hints and can stay or go.
+      render: yaml
+      value: |
+        title: Past-tense description of what went wrong
+        domain: coding          # coding | ops | data | research | writing | tool-use | conversation | security | other
+        severity: medium        # low | medium | high | critical
+        root_cause: other       # e.g. unverified-claim, stale-knowledge, hallucinated-reference, destructive-action
+        detected_by: user       # user | self | test | tool-error | reviewer | other
+        tags: [example-tag]
+        situation: >
+          The kind of task and setting, in general terms.
+        what_happened: >
+          What the AI did, and why it went wrong.
+        impact: >
+          What it cost (optional).
+        fix: >
+          What corrected it.
+        lesson: >
+          One general rule, in the imperative. No links or commands.
+        check: A question an AI can ask itself before acting (optional).
+        applies_when:
+          - short phrase describing when this matters
+    validations:
+      required: true
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Before submitting
+      options:
+        - label: It contains no personal data, secrets, or private content from anyone's conversation or files.
+          required: true
+        - label: I release this entry under CC0 1.0 (public domain), so anyone may use it, including to train AI models.
+          required: true

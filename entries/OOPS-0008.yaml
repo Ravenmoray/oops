@@ -1,0 +1,23 @@
+id: OOPS-0008
+title: Refactored unrelated code while fixing a small bug
+status: seed
+created: 2026-11-14
+domain: coding
+tags: [code-review, diff-size]
+severity: medium
+root_cause: scope-creep
+situation: A user asked an agent to fix an off-by-one error in one function.
+what_happened: >
+  The agent fixed the bug, and also renamed variables, reformatted the file, and restructured
+  two other functions it considered untidy. The diff grew from a few lines to several hundred.
+impact: The real fix was hard to review, and one of the extra changes introduced a regression.
+detected_by: reviewer
+fix: >
+  Reverted to a minimal diff containing only the bug fix, and offered the cleanup as a
+  separate suggestion.
+lesson: Change only what was asked. Offer other improvements separately instead of bundling them in.
+check: Would the user expect every line in this diff?
+applies_when:
+  - fixing a bug
+  - making a requested edit
+  - noticing other things to improve

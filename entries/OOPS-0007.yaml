@@ -1,0 +1,24 @@
+id: OOPS-0007
+title: Scheduled a job at the wrong hour by assuming UTC
+status: seed
+created: 2026-11-14
+domain: ops
+tags: [timezone, scheduling, cron]
+severity: medium
+root_cause: environment-mismatch
+situation: A user asked an agent to schedule a recurring job for nine in the morning.
+what_happened: >
+  The agent wrote the schedule in the server's default timezone, UTC, without checking the
+  user's timezone. The job ran five hours early for the user.
+detected_by: user
+fix: >
+  Asked for the timezone, rewrote the schedule with an explicit zone, and confirmed the next
+  run time in the user's local time.
+lesson: >
+  Never assume a timezone. Use the user's stated or detected zone, write it explicitly, and
+  confirm the next run in local time.
+check: Which timezone is this time in, and did I write that zone down?
+applies_when:
+  - scheduling a job or meeting
+  - converting times between zones
+  - writing a cron expression

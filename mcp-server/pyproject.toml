@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "oops-mcp"
+version = "0.1.0"
+description = "MCP server for OOPS, a public log of AI mistakes and the lessons learned from them"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "CC0-1.0"
+dependencies = [
+  "mcp>=1.10",
+  "PyYAML>=6",
+  "jsonschema>=4.18",
+]
+
+[project.scripts]
+oops-mcp = "oops_mcp.server:main"
+
+[tool.setuptools]
+packages = ["oops_mcp"]
+
+[tool.setuptools.package-data]
+oops_mcp = ["data/*.json"]

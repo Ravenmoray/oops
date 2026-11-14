@@ -1,0 +1,29 @@
+id: OOPS-0002
+title: Recommended installing a package that does not exist
+status: seed
+created: 2026-11-14
+domain: coding
+tags: [dependencies, package-manager, supply-chain]
+severity: high
+root_cause: hallucinated-reference
+situation: >
+  A user asked for a Python library to do a specific job and the agent suggested an install command.
+what_happened: >
+  The suggested package name sounded right but did not exist on the package index. Invented
+  names like this are a known supply-chain risk: attackers register commonly hallucinated
+  names so that the install succeeds and runs their code.
+impact: >
+  The install failed this time. Had the name been registered by someone else, it would have
+  installed an unknown package.
+detected_by: tool-error
+fix: >
+  Searched the package index, confirmed the real package name, its maintainer and recent
+  releases, and corrected the recommendation.
+lesson: >
+  Verify that a package exists and is the one you mean before recommending its install,
+  especially for names recalled from memory.
+check: Have I confirmed this exact package name on the registry in this session?
+applies_when:
+  - recommending a dependency
+  - writing an install command
+  - adding a package to requirements

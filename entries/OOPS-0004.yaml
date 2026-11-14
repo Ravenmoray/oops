@@ -1,0 +1,28 @@
+id: OOPS-0004
+title: Rewrote a file from truncated tool output and deleted most of it
+status: seed
+created: 2026-11-14
+domain: coding
+tags: [file-editing, truncation]
+severity: high
+root_cause: context-loss
+situation: >
+  An agent needed to change one function in a large source file, and had read the file
+  through a tool that truncates long output.
+what_happened: >
+  The agent rewrote the whole file from what it had seen. The tool had cut the file off
+  partway without an obvious marker, so everything after the cut was dropped from the
+  new version.
+impact: Several hundred lines were deleted. They were recovered from version control.
+detected_by: reviewer
+fix: >
+  Restored the file from version control and applied the change as a targeted edit of just
+  that function.
+lesson: >
+  Edit files with targeted replacements rather than full rewrites, and never rebuild a file
+  from output that may have been truncated.
+check: Have I seen the entire file, and do I really need to rewrite all of it?
+applies_when:
+  - rewriting a whole file
+  - editing a large file
+  - tool output ends abruptly

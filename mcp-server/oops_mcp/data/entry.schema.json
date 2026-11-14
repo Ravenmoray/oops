@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:oops:schema:entry:v1",
+  "title": "OOPS entry: one AI mistake and the lesson learned from it",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id", "title", "status", "created", "domain", "severity", "root_cause",
+    "situation", "what_happened", "fix", "lesson"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^OOPS-[0-9]{4,}$",
+      "description": "Assigned by a maintainer at merge time. Must match the file name."
+    },
+    "title": {
+      "type": "string", "minLength": 10, "maxLength": 120,
+      "description": "Short, past tense: what went wrong."
+    },
+    "status": {
+      "enum": ["seed", "reviewed", "confirmed", "disputed", "deprecated"]
+    },
+    "created": { "type": "string", "format": "date", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "updated": { "type": "string", "format": "date", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "domain": {
+      "enum": ["coding", "ops", "data", "research", "writing", "tool-use", "conversation", "security", "other"]
+    },
+    "tags": {
+      "type": "array", "maxItems": 10, "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{1,39}$" }
+    },
+    "severity": { "enum": ["low", "medium", "high", "critical"] },
+    "root_cause": {
+      "enum": [
+        "unverified-claim", "stale-knowledge", "hallucinated-reference", "instruction-misread",
+        "assumption-unchecked", "scope-creep", "destructive-action", "context-loss", "tool-misuse",
+        "environment-mismatch", "overconfidence", "sycophancy", "security-lapse",
+        "arithmetic-logic", "persistence-failure", "other"
+      ]
+    },
+    "agent": {
+      "type": "object", "additionalProperties": false,
+      "description": "Optional. What made the mistake. No user or account identifiers.",
+      "properties": {
+        "model": { "type": "string", "maxLength": 80 },
+        "harness": { "type": "string", "maxLength": 80 },
+        "tools": {
+          "type": "array", "maxItems": 10,
+          "items": { "type": "string", "maxLength": 60 }
+        }
+      }
+    },
+    "situation": {
+      "type": "string", "minLength": 20, "maxLength": 1000,
+      "description": "The generalized task and setting. No user data, names, or private content."
+    },
+    "what_happened": { "type": "string", "minLength": 20, "maxLength": 1500 },
+    "impact": { "type": "string", "maxLength": 600 },
+    "detected_by": { "enum": ["user", "self", "test", "tool-error", "reviewer", "other"] },
+    "fix": {
+      "type": "string", "minLength": 10, "maxLength": 1000,
+      "description": "What corrected it in the moment."
+    },
+    "lesson": {
+      "type": "string", "minLength": 20, "maxLength": 300,
+      "description": "One generalizable rule, in the imperative. No URLs, no commands."
+    },
+    "check": {
+      "type": "string", "maxLength": 200,
+      "description": "Optional pre-action question an agent can ask itself."
+    },
+    "applies_when": {
+      "type": "array", "maxItems": 8,
+      "items": { "type": "string", "minLength": 5, "maxLength": 100 },
+      "description": "Short trigger phrases describing when this lesson is relevant. Used for retrieval."
+    },
+    "confirmations": {
+      "type": "integer", "minimum": 0,
+      "description": "Independent reports of the same mistake, merged into this entry."
+    },
+    "feedback": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "helpful": { "type": "integer", "minimum": 0 },
+        "not_helpful": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "related": {
+      "type": "array", "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^OOPS-[0-9]{4,}$" }
+    },
+    "supersedes": { "type": "string", "pattern": "^OOPS-[0-9]{4,}$" },
+    "superseded_by": { "type": "string", "pattern": "^OOPS-[0-9]{4,}$" },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["type", "ref"],
+        "properties": {
+          "type": { "enum": ["issue", "pr", "session", "url"] },
+          "ref": { "type": "string", "maxLength": 300 }
+        }
+      }
+    }
+  }
+}

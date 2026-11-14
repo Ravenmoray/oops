@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "root_causes": {
+    "unverified-claim": "Asserted a result, fact, or state (tests pass, file saved, command worked) without checking it.",
+    "stale-knowledge": "Relied on training-time knowledge for something that changes: versions, APIs, office holders, prices, laws.",
+    "hallucinated-reference": "Invented something that does not exist: a package, function, flag, file, citation, URL, or quote.",
+    "instruction-misread": "Misunderstood, ignored, or dropped part of what the user actually asked for.",
+    "assumption-unchecked": "Silently filled a gap with a guess when it should have looked it up or asked.",
+    "scope-creep": "Changed or produced things nobody asked for, beyond the requested task.",
+    "destructive-action": "Took an irreversible or destructive action without a safeguard, dry run, or confirmation.",
+    "context-loss": "Worked from partial information: truncated output, forgotten earlier turns, or a summary mistaken for the whole.",
+    "tool-misuse": "Used a tool wrongly: wrong tool, wrong arguments, misread its output, or ignored its error.",
+    "environment-mismatch": "Assumed the wrong OS, shell, version, path, timezone, locale, encoding, or permission.",
+    "overconfidence": "Stated something uncertain as certain, or failed to flag the limits of what it knew.",
+    "sycophancy": "Agreed with or deferred to the user against the evidence, or softened a needed correction away.",
+    "security-lapse": "Exposed a secret, trusted untrusted input, or followed instructions injected through content.",
+    "arithmetic-logic": "Made a calculation, counting, date, unit, or reasoning error.",
+    "persistence-failure": "Gave up too early, or looped on the same failing approach instead of changing strategy.",
+    "other": "None of the above fits; explain in what_happened and propose a new category."
+  },
+  "domains": {
+    "coding": "Writing, editing, reviewing, or running code.",
+    "ops": "System administration, infrastructure, deployment, networking.",
+    "data": "Analysis, spreadsheets, statistics, data transformation.",
+    "research": "Looking things up, citing sources, answering factual questions.",
+    "writing": "Drafting, editing, or summarizing prose.",
+    "tool-use": "Driving tools, browsers, APIs, or other agents.",
+    "conversation": "Ordinary dialogue, advice, explanation.",
+    "security": "Secrets, permissions, untrusted input, privacy.",
+    "other": "Anything else."
+  },
+  "detected_by": {
+    "user": "The user noticed and pointed it out.",
+    "self": "The agent caught its own mistake.",
+    "test": "A test, linter, validator, or CI run caught it.",
+    "tool-error": "A tool returned an error that exposed it.",
+    "reviewer": "Another person or agent reviewing the work caught it.",
+    "other": "Some other way."
+  },
+  "statuses": {
+    "seed": "Written by maintainers to bootstrap the log from well-known failure patterns. Not yet independently confirmed.",
+    "reviewed": "Submitted by the community and accepted by a human moderator.",
+    "confirmed": "Reviewed, and independently reported or marked helpful by at least 3 separate reporters.",
+    "disputed": "Conflicting feedback; returned only on request and with a warning.",
+    "deprecated": "No longer applies (tools changed, or superseded). Kept for history, excluded from search."
+  },
+  "severities": {
+    "low": "Wasted time or minor rework.",
+    "medium": "Wrong output the user had to catch and correct.",
+    "high": "Lost work, a misleading result someone relied on, or real cost.",
+    "critical": "Data loss, a security incident, or harm outside the session."
+  }
+}

@@ -1,0 +1,35 @@
+id: OOPS-0013
+title: Wrote MCP server code against an SDK API that had been renamed
+status: seed
+created: 2026-11-14
+domain: coding
+tags: [sdk, versions, mcp, python]
+severity: low
+root_cause: stale-knowledge
+agent:
+  model: claude-opus-5-5
+  harness: claude agent workspace
+  tools: [bash]
+situation: >
+  An agent was building an MCP server in Python and planned to use the SDK's high-level
+  server class as it remembered it from training.
+what_happened: >
+  The first import failed. The installed SDK was a newer major version (2.x) in which that
+  class had been renamed and moved, so the remembered import path no longer existed.
+impact: Caught on the first probe, before any code depended on it. Cost one round trip.
+detected_by: tool-error
+fix: >
+  Inspected the installed package, used the new class name, and wrote an import that works
+  on both the old and new major versions.
+lesson: >
+  Before writing code against a library, check the installed version and its actual API
+  rather than relying on remembered names.
+check: Have I confirmed this import and signature against the installed version?
+applies_when:
+  - writing code that uses a third-party SDK
+  - a library recently had a major release
+  - writing an import from memory
+related: [OOPS-0003]
+sources:
+  - type: session
+    ref: Claude session that built this project, 2026-11-14

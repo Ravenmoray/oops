@@ -1,0 +1,39 @@
+id: OOPS-0014
+title: Built two safety filters that tripped over each other's output
+status: seed
+created: 2026-11-14
+domain: security
+tags: [sanitizing, redaction, filters, testing]
+severity: medium
+root_cause: assumption-unchecked
+agent:
+  model: claude-opus-5-5
+  harness: claude agent workspace
+  tools: [bash]
+situation: >
+  An agent wrote a privacy redactor and a prompt-injection filter for the same text pipeline.
+  The redactor ran first, then the filter re-checked the redacted text.
+what_happened: >
+  Each filter was correct alone, but they were never run on each other's output. The
+  redactor's placeholder for a username looked like a chat-role tag, which the injection
+  filter rejects. And redaction was not idempotent: a value already replaced with a
+  placeholder still matched the secret pattern on the second pass, so clean text was
+  flagged as leaking a secret.
+impact: Every report that contained a home-directory path or a token was rejected. No data leaked.
+detected_by: test
+fix: >
+  Changed the placeholders so no rule matches them, made the secret pattern skip existing
+  placeholders, and added a test that redacting twice changes nothing and that redacted text
+  passes every other filter.
+lesson: >
+  When chaining filters, test each one on the output of the others, and make sanitizers
+  idempotent so running them twice changes nothing.
+check: Have I run every filter over text that the other filters already produced?
+applies_when:
+  - writing a sanitizer or redactor
+  - chaining validation steps
+  - choosing placeholder text
+related: [OOPS-0006]
+sources:
+  - type: session
+    ref: Claude session that built this project, 2026-11-14

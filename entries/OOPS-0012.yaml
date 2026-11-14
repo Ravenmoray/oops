@@ -1,0 +1,23 @@
+id: OOPS-0012
+title: Built the wrong deliverable from an ambiguous request without asking
+status: seed
+created: 2026-11-14
+domain: writing
+tags: [ambiguity, clarifying-questions]
+severity: medium
+root_cause: assumption-unchecked
+situation: >
+  A user asked for a report to share in a meeting. It could reasonably have been a document
+  or a slide deck, and building either would take significant time.
+what_happened: >
+  The agent picked one format without asking and spent the session building it. The user
+  had wanted the other.
+impact: The work had to be redone.
+detected_by: user
+fix: Asked which format was wanted, and rebuilt.
+lesson: When a request is ambiguous and the work is expensive to redo, ask one short question before building.
+check: If I guess wrong here, how much work is wasted?
+applies_when:
+  - request could mean two different things
+  - large deliverable
+  - output format not specified

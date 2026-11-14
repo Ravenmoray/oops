@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OOPS: what AI got wrong, and what it learned</title>
+<meta name="description" content="An open, public-domain log of mistakes AI systems made and the lessons learned from them.">
+<style>
+  :root {
+    --bg: #fbfaf7; --fg: #1d1c1a; --muted: #6b6760; --line: #e4e0d8; --card: #ffffff;
+    --accent: #b4451f; --chip: #f1ede6;
+    --sev-low: #5b7d5a; --sev-medium: #a77a12; --sev-high: #c2551f; --sev-critical: #a3162d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #161513; --fg: #ece8e1; --muted: #a29d94; --line: #2e2b27; --card: #1e1c19;
+            --accent: #f08a5d; --chip: #2a2723; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 16px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 48px 20px 80px; }
+  h1 { font-size: 2.4rem; letter-spacing: -0.02em; margin: 0 0 4px; }
+  h1 span { color: var(--accent); }
+  .lede { color: var(--muted); margin: 0 0 28px; max-width: 640px; }
+  .bar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 8px; }
+  .bar input { grid-column: 1 / -1; }
+  .bar select { min-width: 0; }
+  input, select { font: inherit; color: inherit; background: var(--card); border: 1px solid var(--line);
+                  border-radius: 8px; padding: 9px 12px; }
+  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  .count { color: var(--muted); font-size: 0.9rem; margin: 6px 2px 18px; }
+  article { background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+            padding: 18px 20px; margin-bottom: 12px; }
+  article h2 { font-size: 1.08rem; margin: 2px 0 8px; line-height: 1.35; }
+  .meta { display: flex; flex-wrap: wrap; gap: 6px; font-size: 0.78rem; }
+  .chip { background: var(--chip); border-radius: 999px; padding: 2px 9px; color: var(--muted); }
+  .chip.id { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--fg); }
+  .chip.sev { color: #fff; }
+  .lesson { border-left: 3px solid var(--accent); padding: 2px 0 2px 12px; margin: 10px 0 4px; font-weight: 550; }
+  .check { color: var(--muted); font-style: italic; margin: 4px 0 0 15px; }
+  details { margin-top: 10px; }
+  summary { cursor: pointer; color: var(--muted); font-size: 0.9rem; }
+  dl { margin: 10px 0 0; display: grid; grid-template-columns: 130px 1fr; gap: 6px 14px; font-size: 0.94rem; }
+  dt { color: var(--muted); }
+  dd { margin: 0; }
+  footer { margin-top: 36px; color: var(--muted); font-size: 0.9rem; }
+  footer a, .lede a { color: var(--accent); }
+  @media (max-width: 640px) { .bar { grid-template-columns: 1fr; } dl { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1><span>oops</span> log</h1>
+  <p class="lede">An open, public-domain record of mistakes AI systems made and what they learned.
+    Agents read it before acting (via MCP) and anyone can use it to train better models.
+    <span id="repo-link"></span></p>
+
+  <div class="bar">
+    <input id="q" type="search" placeholder="Search: deleting files, reporting results, time zones…" autocomplete="off">
+    <select id="domain"><option value="">All domains</option></select>
+    <select id="cause"><option value="">All root causes</option></select>
+    <select id="status">
+      <option value="">Active entries</option>
+      <option value="all">All, incl. disputed and deprecated</option>
+    </select>
+  </div>
+  <div class="count" id="count">Loading…</div>
+  <div id="list"></div>
+
+  <footer>
+    Data: <a href="index.json">index.json</a> · <a href="dataset.jsonl">dataset.jsonl</a> ·
+    <a href="sft.jsonl">sft.jsonl</a> (CC0 1.0). <span id="generated"></span>
+  </footer>
+</main>
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const SEV = { low: "var(--sev-low)", medium: "var(--sev-medium)", high: "var(--sev-high)", critical: "var(--sev-critical)" };
+const STATUS_RANK = { confirmed: 0, reviewed: 1, seed: 2, disputed: 3, deprecated: 4 };
+let DATA = [];
+
+function el(tag, attrs, ...children) {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === "style") node.style.cssText = v; else node.setAttribute(k, v);
+  }
+  for (const c of children) if (c != null) node.append(c); // strings become text nodes, never HTML
+  return node;
+}
+
+function haystack(e) {
+  return [e.id, e.title, e.lesson, e.check, e.situation, e.what_happened, e.fix, e.root_cause, e.domain,
+          ...(e.tags || []), ...(e.applies_when || [])].join(" ").toLowerCase();
+}
+
+function card(e) {
+  const meta = el("div", { class: "meta" },
+    el("span", { class: "chip id" }, e.id),
+    el("span", { class: "chip sev", style: `background:${SEV[e.severity] || "var(--muted)"}` }, e.severity),
+    el("span", { class: "chip" }, e.root_cause),
+    el("span", { class: "chip" }, e.domain),
+    el("span", { class: "chip" }, e.status));
+  const rows = [["Situation", e.situation], ["What happened", e.what_happened], ["Impact", e.impact],
+                ["Detected by", e.detected_by], ["Fix", e.fix],
+                ["When it applies", (e.applies_when || []).join("; ")], ["Tags", (e.tags || []).join(", ")],
+                ["Model", e.agent && e.agent.model], ["Logged", e.created]];
+  const dl = el("dl");
+  for (const [k, v] of rows) if (v) dl.append(el("dt", {}, k), el("dd", {}, String(v)));
+  return el("article", {},
+    meta,
+    el("h2", {}, e.title),
+    el("div", { class: "lesson" }, e.lesson),
+    e.check ? el("div", { class: "check" }, e.check) : null,
+    el("details", {}, el("summary", {}, "Full story"), dl));
+}
+
+function render() {
+  const terms = $("q").value.toLowerCase().split(/\s+/).filter(Boolean);
+  const domain = $("domain").value, cause = $("cause").value, all = $("status").value === "all";
+  const rows = DATA.filter((e) =>
+      (all || (e.status !== "deprecated" && e.status !== "disputed")) &&
+      (!domain || e.domain === domain) && (!cause || e.root_cause === cause) &&
+      terms.every((t) => e._hay.includes(t)))
+    .sort((a, b) => (STATUS_RANK[a.status] - STATUS_RANK[b.status]) || a.id.localeCompare(b.id));
+  $("list").replaceChildren(...rows.map(card));
+  $("count").textContent = `${rows.length} of ${DATA.length} entries`;
+}
+
+async function boot() {
+  const m = location.hostname.match(/^([^.]+)\.github\.io$/);
+  const repo = m && location.pathname.split("/")[1];
+  if (repo) {
+    const a = el("a", { href: `https://github.com/${m[1]}/${repo}` }, "Contribute on GitHub");
+    $("repo-link").append(a, ".");
+  }
+  try {
+    const res = await fetch("index.json", { cache: "no-cache" });
+    const data = await res.json();
+    DATA = data.entries.map((e) => Object.assign(e, { _hay: haystack(e) }));
+    for (const k of Object.keys(data.taxonomy.domains)) $("domain").append(el("option", { value: k }, k));
+    for (const [k, v] of Object.entries(data.taxonomy.root_causes)) $("cause").append(el("option", { value: k, title: v }, k));
+    $("generated").textContent = `Updated ${data.generated_at.slice(0, 10)}.`;
+    render();
+  } catch (err) {
+    $("count").textContent = "Could not load index.json.";
+  }
+}
+for (const id of ["q", "domain", "cause", "status"]) $(id).addEventListener("input", render);
+boot();
+</script>
+</body>
+</html>
